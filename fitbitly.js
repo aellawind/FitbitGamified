@@ -18,13 +18,16 @@ var FITBIT_CONSUMER_SECRET = '12beae92a6da44bab17335de09843bc4';
 var fitbitClient = new utils.FitbitAPIClient(FITBIT_CONSUMER_KEY, FITBIT_CONSUMER_SECRET);
 var globalVar = {}; 
 
-// adding to the database
+// returns sufficient identifying information to recover the user account on any subsequent requests
+// specifically the second parameter of the done() methodis the information serialized into the session data
 passport.serializeUser(function(user, done) {
-  //console.log("A",user);
+  console.log("A",user);
   done(null, user);
 });
 
-// calls this for logging out?
+
+// deserialize returns the user profile based on the identifying information that was serialized 
+// to the session
 passport.deserializeUser(function(obj, done) {
   //console.log("B",obj);
   done(null, obj);
@@ -59,6 +62,8 @@ app.use(express.static(__dirname + '/public'));
 
 // Home page, either redirects to main page or to login
 app.get('/', function(req, res) {
+	console.log('gets here');
+	console.log('here',req.session.oauth_access_token);
 	if(!req.session.oauth_access_token) {
 		res.redirect('/auth/fitbit');
 	} else {
@@ -94,12 +99,12 @@ app.get('/FitbitRPG',  utils.ensureAuthenticated, function(req,res) {
 });
 
 
-exports.fetchLinks = function(req, res) {
-  console.log('fetched');
-  Link.find({}, function(err,links){
-    res.send(200,links);
-  });
-};
+// exports.fetchLinks = function(req, res) {
+//   console.log('fetched');
+//   Link.find({}, function(err,links){
+//     res.send(200,links);
+//   });
+// };
 
 
 app.get('/homes', function(req,res) {
@@ -125,6 +130,7 @@ app.get('/auth/fitbit/callback',
 });
 
 app.get('/logout', function(req, res){
+  console.log('gets here');
   req.logout();
   res.redirect('/');
 });

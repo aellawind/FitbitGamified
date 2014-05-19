@@ -1,13 +1,10 @@
 var db = require('../config');
 var mongoose = require('mongoose');
 
+var userSchema = mongoose.Schema({
 
-//var bcrypt = require('bcrypt-nodejs');
-//var Promise = require('bluebird');
-
-user
+});
 
 
-// store
 
-// medal
+module.exports = mongoose.model('User',userSchema);
