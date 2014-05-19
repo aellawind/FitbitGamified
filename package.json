@@ -1,0 +1,26 @@
+{
+  "name": "FitbitGame",
+  "version": "0.0.1",
+  "description": "fitbitgame using the api",
+  "main": "fitbitly.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Amira Anuar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.2.0",
+    "passport-fitbit": "^0.1.2",
+    "request": "^2.35.0",
+    "express-partials": "^0.2.0",
+    "passport": "^0.2.0",
+    "cookie-parser": "^1.1.0",
+    "express-session": "^1.1.0",
+    "morgan": "^1.1.0",
+    "body-parser": "^1.2.0",
+    "method-override": "^1.0.1",
+    "oauth": "^0.9.11",
+    "q": "^1.0.1",
+    "mongoose": "^3.8.9"
+  }
+}
