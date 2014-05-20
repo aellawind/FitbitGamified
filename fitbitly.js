@@ -43,7 +43,9 @@ passport.use(new FitbitStrategy({
   function (token, tokenSecret, profile, done) {
     // asynchronous verification, for effect...
     process.nextTick(function () {
+      console.log('makes it here');
       exports.token = token;
+      exports.oauth_access_token = token;
       exports.tokenSecret = tokenSecret;
       User.findOne({
         originalId: profile.id,
@@ -51,9 +53,7 @@ passport.use(new FitbitStrategy({
       }, function (err,foundUser) {
         if (foundUser) {
           console.log("This user exists already.");
-          fitbitGet.subscribeUser(function() {
-            done(null, foundUser);
-          }); //eventually remove this and only do it for new users
+          done(null, foundUser);//eventually remove this and only do it for new users, why is this even here,idk
         } else {
           var newUser = new User({
             originalId: profile.id,
@@ -61,9 +61,11 @@ passport.use(new FitbitStrategy({
             displayName: profile.displayName
           });
           newUser.save(function (err, savedUser) {
-            if (err) {throw err;}
+            if (err) {
+              throw err;
+            }
             console.log("New user: " + savedUser);
-            fitbitGet.subscribeUser(function() {
+            fitbitGet.subscribeUser(savedUser.originalId, function() {
               done(null, savedUser);
             });
           });
@@ -104,7 +106,9 @@ app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getAllFitbitData);
 app.get('/profile', utils.ensureAuthenticated, fitbitGet.getProfile);
 app.get('/friends', utils.ensureAuthenticated, fitbitGet.getFriends);
 app.get('/allStats', utils.ensureAuthenticated, fitbitGet.getAllStats);
-
+app.get('/error', function(req, res) {
+  res.sendfile(__dirname + '/public/client/templates/error.html');
+});
 // GET /auth/fitbit/callback
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
@@ -112,16 +116,16 @@ app.get('/allStats', utils.ensureAuthenticated, fitbitGet.getAllStats);
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/fitbit/callback',
   passport.authenticate('fitbit', {
-    failureRedirect: '/lala'
+    failureRedirect: '/error'
   }),
   function (req, res) {
-    res.redirect('/');
+    res.redirect('/FitbitRPG');
 });
 
 // The callback user gets sent to after authentication at fitbit, just redirects to the game
 app.get('/auth/fitbit/callback',
   passport.authenticate('fitbit', {
-    failureRedirect: '/lala'
+    failureRedirect: '/error'
   }),
   function (req, res) {
     res.redirect('/FitbitRPG');

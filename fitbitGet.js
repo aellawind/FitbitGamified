@@ -1,9 +1,9 @@
 var fitbitly = require('./fitbitly.js');
 var Q = require('q');
+
 // move to modularize later
 var db = require('./appData/config.js');
 var User = require('./appData/models/user.js');
-
 
 //dummy function here
 exports.getActivities = function (req, res) {
@@ -14,18 +14,18 @@ exports.getActivities = function (req, res) {
     });
 }
 
-exports.subscribeUser = function(cb) {
-  return fitbitly.fitbitClient.requestResource("/apiSubscriptions/320.json", "POST", fitbitly.token, fitbitly.tokenSecret)
+exports.subscribeUser = function(id,cb) {
+  fitbitly.fitbitClient.requestResource("/apiSubscriptions/"+id+".json", "POST", fitbitly.token, fitbitly.tokenSecret)
     .then(function (results) {
+	    console.log(id);
 	    cb();
     });
 }
 
 //eventually do stacked promises...?
 exports.getAllFitbitData = function(req,res) {
-	
+	console.log(req.user);
 	var date = req.user.createdAt.yyyymmdd();
-
 	fitbitly.fitbitClient.requestResource("/profile.json", "GET", fitbitly.token, fitbitly.tokenSecret)
 	    .then(function (results) {
 	      var obj = JSON.parse(results[0]).user;
@@ -42,7 +42,6 @@ exports.getAllFitbitData = function(req,res) {
       req.user.lightlyActiveMins = activities.summary.lightlyActiveMinutes;
       req.user.steps = activities.summary.steps;
       req.user.calories = activities.summary.caloriesOut; //not 100% sure if this is accurate representation of calories
-
     });
 
 	//get sleep
