@@ -7,45 +7,64 @@ var methodOverride = require('method-override');
 var passport = require('passport');
 var FitbitStrategy = require('passport-fitbit').Strategy;
 var app = express();
-var session = require('express-session');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var utils = require('./lib/util.js');
+var fitbitGet = require('./fitbitGet.js');
 
+// move to modularize later
+var db = require('./appData/config.js');
+var User = require('./appData/models/user.js');
 
 // Passport credential configs, sign up
 var FITBIT_CONSUMER_KEY = '8cda22173ee44a5bba066322ccd5ed34';
 var FITBIT_CONSUMER_SECRET = '12beae92a6da44bab17335de09843bc4';
-var fitbitClient = new utils.FitbitAPIClient(FITBIT_CONSUMER_KEY, FITBIT_CONSUMER_SECRET);
-var globalVar = {}; 
+exports.fitbitClient = new utils.FitbitAPIClient(FITBIT_CONSUMER_KEY, FITBIT_CONSUMER_SECRET);
 
 // returns sufficient identifying information to recover the user account on any subsequent requests
-// specifically the second parameter of the done() methodis the information serialized into the session data
-passport.serializeUser(function(user, done) {
-  console.log("A",user);
-  done(null, user);
+// specifically the second parameter of the done() method is the information serialized into the session data
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
 });
-
 
 // deserialize returns the user profile based on the identifying information that was serialized 
 // to the session
-passport.deserializeUser(function(obj, done) {
-  //console.log("B",obj);
-  done(null, obj);
+passport.deserializeUser(function (id, done) {
+  User.findOne(id, function (err, user) {
+    done(err, user);
+  });
 });
 
 passport.use(new FitbitStrategy({
     consumerKey: FITBIT_CONSUMER_KEY,
     consumerSecret: FITBIT_CONSUMER_SECRET,
-    callbackURL: "http://127.0.0.1:4567/auth/fitbit/callback"
+    callbackURL: "/auth/fitbit/callback"
   },
-  function(token, tokenSecret, profile, done) {
-    globalVar.token = token;
-    globalVar.tokenSecret = tokenSecret;
-    console.log("@",globalVar.token, globalVar.tokenSecret);
+  function (token, tokenSecret, profile, done) {
     // asynchronous verification, for effect...
     process.nextTick(function () {
-    console.log(profile);
-        return done(null, profile);
+      exports.token = token;
+      exports.tokenSecret = tokenSecret;
+      User.findOne({
+        originalId: profile.id,
+        provider: profile.provider
+      }, function (err,foundUser) {
+        if (foundUser) {
+          console.log("This user exists already.");
+          done(null, foundUser);
+        } else {
+          var newUser = new User({
+            originalId: profile.id,
+            provider: profile.provider,
+            displayName: profile.displayName
+          });
+          newUser.save(function (err, savedUser) {
+            if (err) {throw err;}
+            console.log("New user: " + savedUser);
+            done(null, savedUser);
+          });
+        }
+      });
     });
   }
 ));
@@ -55,91 +74,66 @@ passport.use(new FitbitStrategy({
 app.use(cookieParser());
 app.use(bodyParser());
 app.use(methodOverride());
-app.use(session({ secret: 'keyboard cat', maxAge: 360*5}));
+app.use(session({secret: 'keyboard cat',maxAge: 360 * 5
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(__dirname + '/public'));
 
 // Home page, either redirects to main page or to login
-app.get('/', function(req, res) {
-	console.log('gets here');
-	console.log('here',req.session.oauth_access_token);
-	if(!req.session.oauth_access_token) {
-		res.redirect('/auth/fitbit');
-	} else {
-		res.redirect('/FitbitRPG');
-	}
-});	
+app.get('/', utils.ensureAuthenticated, function (req, res) {
+  res.redirect('/FitbitRPG');
+});
 
 // Sends the user to get authenticated with fitbit
 app.get('/auth/fitbit',
   passport.authenticate('fitbit'),
-  function(req, res){
+  function (req, res) {
     // The request will be redirected to Fitbit for authentication, so this
     // function will not be called.
-});
-
-// The callback user gets sent to after authentication
-app.get('/auth/fitbit/callback', 
-  passport.authenticate('fitbit', { failureRedirect: '/lala' }), 
-  function(req, res) {
-    res.redirect('/FitbitRPG');
-});
-
-app.get('/FitbitRPG',  utils.ensureAuthenticated, function(req,res) {	
-	console.log("@",globalVar.token, globalVar.tokenSecret);
-	return fitbitClient.requestResource("/friends.json", "GET", globalVar.token, globalVar.tokenSecret)
-	.then(function (results) {
-			console.log("HERE");
-			var response = results[0];
-			console.log(response);
-			res.sendfile(__dirname+'/public/client/templates/index.html');
-
-	});
-});
+  });
 
 
-// exports.fetchLinks = function(req, res) {
-//   console.log('fetched');
-//   Link.find({}, function(err,links){
-//     res.send(200,links);
-//   });
-// };
+// Main game page
+app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getFriends);
 
-
-app.get('/homes', function(req,res) {
-	res.sendfile(__dirname+'/public/client/templates/homes.html');
-});
-
-// GET /auth/fitbit
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  The first step in Fitbit authentication will involve redirecting
-//   the user to fitbit.com.  After authorization, Fitbit will redirect the user
-//   back to this application at /auth/fitbit/callback
-
+app.get('/activities', utils.ensureAuthenticated, fitbitGet.getActivities);
 
 // GET /auth/fitbit/callback
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-app.get('/auth/fitbit/callback', 
-  passport.authenticate('fitbit', { failureRedirect: '/lala' }),
-  function(req, res) {
+app.get('/auth/fitbit/callback',
+  passport.authenticate('fitbit', {
+    failureRedirect: '/lala'
+  }),
+  function (req, res) {
     res.redirect('/');
 });
 
-app.get('/logout', function(req, res){
+// The callback user gets sent to after authentication at fitbit, just redirects to the game
+app.get('/auth/fitbit/callback',
+  passport.authenticate('fitbit', {
+    failureRedirect: '/lala'
+  }),
+  function (req, res) {
+    res.redirect('/FitbitRPG');
+});
+
+// Performs a function 'logout', not 100% sure what that entails quite yet.
+app.get('/logout', function (req, res) {
   console.log('gets here');
   req.logout();
   res.redirect('/');
 });
 
-
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
+// THE BELOW IS A TESTING FUNCTION TO SEE ALL USERS IN MY DB, REMOVE LATER
+app.get('/homes', function (req, res) {
+  User.find({}, function(err,user) {
+    console.log('USER', err, user);
+  });
+  res.sendfile(__dirname + '/public/client/templates/homes.html');
+});
 
 module.exports = app;
