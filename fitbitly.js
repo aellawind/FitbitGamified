@@ -143,7 +143,8 @@ app.get('/homes', function (req, res) {
 app.get('/fitbitpush', function(req, res) {
   console.log("Fitbit pushed!");
   console.log(req,res);
-  res.send(204);
+  res.set('Content-Type', 'application/json');
+  res.send(204, {});
 });
 
 module.exports = app;
