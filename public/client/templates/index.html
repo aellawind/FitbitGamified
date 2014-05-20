@@ -1,16 +1,125 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html ng-app="fitApp">
   <head>
     <meta charset="utf-8" />
-    <title>Fitbitly</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
+    <title>FitRPG</title>
+
+    <!-- Bootstrap -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../bower_components/bootstrap/dist/css/amira-theme.css" rel="stylesheet">
+
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../bower_components/angular-mocks/angular-mocks.js"></script>
+    <script src="../bower_components/angular-route/angular-route.js"></script>
+    <script src="../bower_components/bootstrap-custom/ui-bootstrap-custom-tpls-0.10.0.min.js"></script>
+    <script src="./client/js/fitRPGLogic.js"></script>
   </head>
 
+
   <body>
-    <h1>Fitbitly</h1>
-    <a href="/logout">Log Out</a>
 
+     <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Fitbit RPG</a>
+            </div>
 
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="#about">About</a>
+                    </li>
+                    <li><a href="#services">Settings</a>
+                    </li>
+                    <li><a href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <div class="header-image">
+
+        <div class="headline">
+            <div class="container">
+                <h1>FitRPG</h1>
+                <h2>Fight and Get Fit</h2>
+            </div>
+        </div>
+
+    </div>
+    <!-- /header-image -->
+
+    <div class="container">
+
+        <!-- START THE FEATURETTES -->
+
+        <hr class="featurette-divider">
+
+        <div ng-controller="profileArea" class="featurette" id="about">
+            <img class="featurette-image img-circle img-responsive pull-right avatar" src="{{prof.avatar150}}">
+            <h2 class="featurette-heading">Transform Your Steps
+                <span class="text-muted">Into FitHP</span>
+            </h2>
+            <div ng-controller="allStats">
+            <p class="lead">Welcome to FitRPG {{prof.displayName}} !<br>
+            	 Calories: {{stats.calories }} <br>
+            	 Light Active Minutes: {{ stats.lightlyActiveMins }} <br>
+            	 Very Active Minutes: {{ stats.veryActiveMins }} <br>
+            	 Steps: {{ stats.steps }} <br>
+                 Weight: {{ prof.weight }} <br>
+                 Member Since: {{ prof.memberSince }}
+            </p>
+            </div>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <div ng-controller="allFriends" class="featurette" id="services">
+            <img class="featurette-image img-circle img-responsive pull-left" src="https://31.media.tumblr.com/eb7f7a56eddcc4279e6ad3b0260c176e/tumblr_n5vsruKBpD1qewh5to1_500.png">
+            <h2 class="featurette-heading">Battle Your Friends and
+                <span class="text-muted">Run More to Fight More</span>
+            </h2>
+            <p class="lead"> [[ insert friends here ]] </p>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <div class="featurette" id="contact">
+            <img class="featurette-image img-circle img-responsive pull-right" src="http://www.infendo.com/wp-content/uploads/2009/09/Get_Ready_to_BRAWL__Fin__by_AbyssWolf-495x265.png">
+            <h2 class="featurette-heading">FitFight All Your Friends:
+                <span class="text-muted">Jamber, Basis, Nike Fuelband, and More</span>
+            </h2>
+            <p class="lead">Coming soon.</p>
+        </div>
+
+        <!-- /END THE FEATURETTES -->
+
+        <hr>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>Copyright &copy; Amira Anuar 2014</p>
+        </footer>
+        <!-- /END OF FOOTER -->
+
+    </div>
+    <!-- /container -->
 
   </body>
 

@@ -98,14 +98,12 @@ app.get('/auth/fitbit',
   });
 
 
-// Main game page
-app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getAllData);
+// Main game page, when we load it we want to make sure we get all the data
+app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getAllFitbitData);
 
-app.get('/activities', utils.ensureAuthenticated, fitbitGet.getAllData);
-
-app.get('/sleep', utils.ensureAuthenticated, function(req,res) {
-  fitbitGet.getAllData(req,res);
-});
+app.get('/profile', utils.ensureAuthenticated, fitbitGet.getProfile);
+app.get('/friends', utils.ensureAuthenticated, fitbitGet.getFriends);
+app.get('/allStats', utils.ensureAuthenticated, fitbitGet.getAllStats);
 
 // GET /auth/fitbit/callback
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -141,8 +139,7 @@ app.get('/homes', function (req, res) {
   // User.find({}, function(err,user) {
   //   console.log('USER', err, user);
   // });
-  // console.log("Req user",req.user);
-  // console.log(req.session, req.session.user);
+
   res.sendfile(__dirname + '/public/client/templates/homes.html');
 });
 

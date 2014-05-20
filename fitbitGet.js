@@ -1,6 +1,11 @@
 var fitbitly = require('./fitbitly.js');
 var Q = require('q');
+// move to modularize later
+var db = require('./appData/config.js');
+var User = require('./appData/models/user.js');
 
+
+//dummy function here
 exports.getActivities = function (req, res) {
   fitbitly.fitbitClient.requestResource("/activities.json", "GET", fitbitly.token, fitbitly.tokenSecret)
     .then(function (results) {
@@ -12,29 +17,31 @@ exports.getActivities = function (req, res) {
 exports.subscribeUser = function(cb) {
   return fitbitly.fitbitClient.requestResource("/apiSubscriptions/320.json", "POST", fitbitly.token, fitbitly.tokenSecret)
     .then(function (results) {
-      console.log("POST WORKED");
-      var response = results[0];
-      console.log(response);
-      cb();
+	    cb();
     });
 }
 
 //eventually do stacked promises...?
-exports.getAllData = function(req,res) {
+exports.getAllFitbitData = function(req,res) {
 	
 	var date = req.user.createdAt.yyyymmdd();
+
+	fitbitly.fitbitClient.requestResource("/profile.json", "GET", fitbitly.token, fitbitly.tokenSecret)
+	    .then(function (results) {
+	      var obj = JSON.parse(results[0]).user;
+	      req.user.prof = [obj];
+	 });
 
 	//get sedentarymins
     fitbitly.fitbitClient.requestResource("/activities/date/"+date+".json", "GET", fitbitly.token, fitbitly.tokenSecret)
     .then(function (results) {
       var activities = JSON.parse(results[0]);
-      console.log(activities);
       req.user.sedentaryMins = activities.summary.sedentaryMinutes;
       req.user.veryActiveMins = activities.summary.veryActiveMinutes;
       req.user.fairlyActiveMins = activities.summary.fairlyActiveMinutes;
       req.user.lightlyActiveMins = activities.summary.lightlyActiveMinutes;
       req.user.steps = activities.summary.steps;
-      req.user.calories = activities.summary.caloriesOut;
+      req.user.calories = activities.summary.caloriesOut; //not 100% sure if this is accurate representation of calories
 
     });
 
@@ -68,15 +75,44 @@ exports.getAllData = function(req,res) {
       	friendsArr.push(friends[i].user.encodedId);
       }
       req.user.friends = friendsArr;
-      res.sendfile(__dirname + '/public/client/templates/index.html');
-      console.log(req.user);
+      User.findOne({originalID: req.originalID}, function(err,foundUser) {
+      	foundUser.friends = req.user.friends;
+      	foundUser.steps = req.user.steps;
+      	foundUser.calories = req.user.calories;
+      	foundUser.badges = req.user.badges;
+      	foundUser.sedentarymins = req.user.sedentarymins;
+      	foundUser.veryActiveMins = req.user.veryActiveMins;
+      	foundUser.fairlyActiveMins = req.user.fairlyActiveMins;
+      	foundUser.lightlyActiveMins = req.user.lightlyActiveMins;
+      	foundUser.prof = req.user.prof;
+      	foundUser.save(function(err,saved) {
+      		console.log("saving", saved);
+      		res.sendfile(__dirname + '/public/client/templates/index.html');
+
+      	})
+      });
+
     });
-
-    
-    //get calories - NEED TO GET BMR, AS WELL AS ACTIVITY CALS, DO LATER
-    // fitbitly.fitbitClient.requestResource("/sleep/date/"+date+".json", "GET", fitbitly.token, fitbitly.tokenSecret)
-    // .then(function (results) {
-    //   req.user.sleep = results[0];
-    // });
-
 }
+
+
+//------- QUERIES TO THE DATABASE -------//
+
+exports.getProfile = function(req,res) {
+	User.findOne(req.user.originalID, function(err,foundUser) {
+		var profile = foundUser.prof[0];
+		res.send(200,profile);
+	});
+};
+
+exports.getAllStats = function(req, res) {
+	User.findOne(req.user.originalID, function(err, foundUser) {
+		res.send(200,foundUser);
+	});
+};
+
+exports.getFriends = function(req, res) {
+
+};
+
+
