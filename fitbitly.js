@@ -51,7 +51,7 @@ passport.use(new FitbitStrategy({
       }, function (err,foundUser) {
         if (foundUser) {
           console.log("This user exists already.");
-          fitbitGet.subscribeUser(foundUser.originalId, function() {
+          fitbitGet.subscribeUser(function() {
             done(null, foundUser);
           }); //eventually remove this and only do it for new users
         } else {
@@ -63,8 +63,9 @@ passport.use(new FitbitStrategy({
           newUser.save(function (err, savedUser) {
             if (err) {throw err;}
             console.log("New user: " + savedUser);
-            fitbitGet.subscribeUser(savedUser.originalId);
-            done(null, savedUser);
+            fitbitGet.subscribeUser(function() {
+              done(null, savedUser);
+            });
           });
         }
       });
@@ -98,9 +99,13 @@ app.get('/auth/fitbit',
 
 
 // Main game page
-app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getFriends);
+app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getAllData);
 
-app.get('/activities', utils.ensureAuthenticated, fitbitGet.getActivities);
+app.get('/activities', utils.ensureAuthenticated, fitbitGet.getAllData);
+
+app.get('/sleep', utils.ensureAuthenticated, function(req,res) {
+  fitbitGet.getAllData(req,res);
+});
 
 // GET /auth/fitbit/callback
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -133,16 +138,19 @@ app.get('/logout', function (req, res) {
 
 // THE BELOW IS A TESTING FUNCTION TO SEE ALL USERS IN MY DB, REMOVE LATER
 app.get('/homes', function (req, res) {
-  User.find({}, function(err,user) {
-    console.log('USER', err, user);
-  });
+  // User.find({}, function(err,user) {
+  //   console.log('USER', err, user);
+  // });
+  // console.log("Req user",req.user);
+  // console.log(req.session, req.session.user);
   res.sendfile(__dirname + '/public/client/templates/homes.html');
 });
 
-// THEORETICALLY RECEIVE PUSH NOTIFICATIONS FROM FITBIT
+
+// Functionality for receiving push notifications from fitbit
+// Definitely want to integrate a type of security and not accept post requests from just anyone
 app.post('/fitbitpush', function(req, res) {
-  console.log("Fitbit pushed!");
-  console.log(req,res);
+  // HERE WE RECEIVE THE PUSH NOTIFICATION, MAKE A CALL TO RETRIEVE THE DATA
   res.set('Content-Type', 'application/json');
   res.send(204);
 });
