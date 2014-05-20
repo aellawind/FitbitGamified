@@ -51,7 +51,9 @@ passport.use(new FitbitStrategy({
       }, function (err,foundUser) {
         if (foundUser) {
           console.log("This user exists already.");
-          done(null, foundUser);
+          fitbitGet.subscribeUser(foundUser.originalId, function() {
+            done(null, foundUser);
+          }); //eventually remove this and only do it for new users
         } else {
           var newUser = new User({
             originalId: profile.id,
@@ -61,6 +63,7 @@ passport.use(new FitbitStrategy({
           newUser.save(function (err, savedUser) {
             if (err) {throw err;}
             console.log("New user: " + savedUser);
+            fitbitGet.subscribeUser(savedUser.originalId);
             done(null, savedUser);
           });
         }
@@ -134,6 +137,14 @@ app.get('/homes', function (req, res) {
     console.log('USER', err, user);
   });
   res.sendfile(__dirname + '/public/client/templates/homes.html');
+});
+
+// THEORETICALLY RECEIVE PUSH NOTIFICATIONS FROM FITBIT
+app.get('/fitbitpush', function(req, res) {
+  console.log("Fitbit pushed!");
+  console.log(req,res);
+  res.send(204);
+  res.end();
 });
 
 module.exports = app;
