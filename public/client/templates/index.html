@@ -73,18 +73,19 @@
 
         <div ng-controller="profileArea" class="featurette" id="about">
             <img class="featurette-image img-circle img-responsive pull-right avatar" src="{{prof.avatar150}}">
-            <h2 class="featurette-heading">Transform Your Steps
-                <span class="text-muted">Into FitHP</span>
+            <h2 class="featurette-heading">Welcome to FitRPG,
+                <span class="text-muted">{{ prof.displayName }}! </span>
             </h2>
             <div ng-controller="allStats">
-            <p class="lead">Welcome to FitRPG {{prof.displayName}} !<br>
-            	 Calories: {{stats.calories }} <br>
+            <p class="lead"><b>Transform your steps into FitHP!</b><br>
+            	 <i>These are your stats since you've joined!</i><br><br>
+            	 Total Calories Burned: {{stats.calories }} <br>
             	 Light Active Minutes: {{ stats.lightlyActiveMins }} <br>
             	 Very Active Minutes: {{ stats.veryActiveMins }} <br>
             	 Steps: {{ stats.steps }} <br>
                  Weight: {{ prof.weight }} <br>
                  Member Since: {{ prof.memberSince }}<br>
-                 
+
             </p>
             </div>
         </div>
@@ -96,7 +97,12 @@
             <h2 class="featurette-heading">Battle Your Friends and
                 <span class="text-muted">Run More to Fight More</span>
             </h2>
-            <p class="lead"> [[ insert friends here ]] </p>
+            <p class="lead"> 
+            <table class="lead">
+            	<th>asdfasdf</th>
+            	<tr>asdfas</tr>
+            </table>
+             {{ friends }} </p>
         </div>
 
         <hr class="featurette-divider">

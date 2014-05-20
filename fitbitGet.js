@@ -14,6 +14,9 @@ exports.getActivities = function (req, res) {
     });
 }
 
+// If I'm gonna keep dropping dbs, should probably write in this fn
+// to check to make sure that we don't have this subscription already (check the id)
+// otherwise page never loads
 exports.subscribeUser = function(id,cb) {
   fitbitly.fitbitClient.requestResource("/apiSubscriptions/"+id+".json", "POST", fitbitly.token, fitbitly.tokenSecret)
     .then(function (results) {
@@ -24,7 +27,7 @@ exports.subscribeUser = function(id,cb) {
 
 //eventually do stacked promises...?
 exports.getAllFitbitData = function(req,res) {
-	console.log(req.user);
+	//console.log("REQUEST USER:", req.user);
 	var date = req.user.createdAt.yyyymmdd();
 	fitbitly.fitbitClient.requestResource("/profile.json", "GET", fitbitly.token, fitbitly.tokenSecret)
 	    .then(function (results) {
@@ -73,8 +76,11 @@ exports.getAllFitbitData = function(req,res) {
       for (var i = 0; i < friends.length; i++ ) {
       	friendsArr.push(friends[i].user.encodedId);
       }
+
       req.user.friends = friendsArr;
-      User.findOne({originalID: req.originalID}, function(err,foundUser) {
+      console.log('friends', req.user.friends);
+      console.log('original id', req.user.originalId);
+      User.findOne({originalId: req.user.originalId}, function(err,foundUser) {
       	foundUser.friends = req.user.friends;
       	foundUser.steps = req.user.steps;
       	foundUser.calories = req.user.calories;
@@ -85,10 +91,9 @@ exports.getAllFitbitData = function(req,res) {
       	foundUser.lightlyActiveMins = req.user.lightlyActiveMins;
       	foundUser.prof = req.user.prof;
       	foundUser.save(function(err,saved) {
-      		console.log("saving", saved);
       		res.sendfile(__dirname + '/public/client/templates/index.html');
 
-      	})
+      	});
       });
 
     });
@@ -98,20 +103,36 @@ exports.getAllFitbitData = function(req,res) {
 //------- QUERIES TO THE DATABASE -------//
 
 exports.getProfile = function(req,res) {
-	User.findOne(req.user.originalID, function(err,foundUser) {
+	User.findOne({originalId: req.user.originalId}, function(err,foundUser) {
 		var profile = foundUser.prof[0];
 		res.send(200,profile);
 	});
 };
 
 exports.getAllStats = function(req, res) {
-	User.findOne(req.user.originalID, function(err, foundUser) {
+	User.findOne({originalId: req.user.originalId}, function(err, foundUser) {
 		res.send(200,foundUser);
 	});
 };
 
 exports.getFriends = function(req, res) {
-
+	var friendsArr = [];
+	User.findOne({originalId: req.user.originalId}, function(err, foundUser) {
+		var userFriends = foundUser.friends;
+		console.log(userFriends.length);
+		for (var i =0; i < userFriends.length; i++ ) {
+			console.log(i);
+			User.find({originalId: userFriends[i]}, function(err, foundUsers) {
+				if(foundUser) {
+					friendsArr.push(foundUser);
+				}
+				if (i >= userFriends.length-1) {
+					console.log('gets here ever');
+					res.send(200,friendsArr);
+				}
+			});
+		}
+	});
 };
 
 

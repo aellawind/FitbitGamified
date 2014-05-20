@@ -24,13 +24,14 @@ exports.fitbitClient = new utils.FitbitAPIClient(FITBIT_CONSUMER_KEY, FITBIT_CON
 // returns sufficient identifying information to recover the user account on any subsequent requests
 // specifically the second parameter of the done() method is the information serialized into the session data
 passport.serializeUser(function (user, done) {
-  done(null, user.id);
+  console.log(user);
+  done(null, user.originalId);
 });
 
 // deserialize returns the user profile based on the identifying information that was serialized 
 // to the session
 passport.deserializeUser(function (id, done) {
-  User.findOne(id, function (err, user) {
+  User.findOne({originalId: id}, function (err, user) {
     done(err, user);
   });
 });
@@ -43,7 +44,7 @@ passport.use(new FitbitStrategy({
   function (token, tokenSecret, profile, done) {
     // asynchronous verification, for effect...
     process.nextTick(function () {
-      console.log('makes it here');
+      console.log("PROFILE", profile);
       exports.token = token;
       exports.oauth_access_token = token;
       exports.tokenSecret = tokenSecret;
@@ -80,8 +81,7 @@ passport.use(new FitbitStrategy({
 app.use(cookieParser());
 app.use(bodyParser());
 app.use(methodOverride());
-app.use(session({secret: 'keyboard cat',maxAge: 360 * 5
-}));
+app.use(session({secret: 'keyboard cat',maxAge: 360 * 5}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(__dirname + '/public'));
@@ -133,16 +133,15 @@ app.get('/auth/fitbit/callback',
 
 // Performs a function 'logout', not 100% sure what that entails quite yet.
 app.get('/logout', function (req, res) {
-  console.log('gets here');
   req.logout();
   res.redirect('/');
 });
 
 // THE BELOW IS A TESTING FUNCTION TO SEE ALL USERS IN MY DB, REMOVE LATER
 app.get('/homes', function (req, res) {
-  // User.find({}, function(err,user) {
-  //   console.log('USER', err, user);
-  // });
+  User.find({}, function(err,user) {
+    console.log('USER', err, user);
+  });
 
   res.sendfile(__dirname + '/public/client/templates/homes.html');
 });
