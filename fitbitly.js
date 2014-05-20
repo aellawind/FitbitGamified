@@ -140,11 +140,11 @@ app.get('/homes', function (req, res) {
 });
 
 // THEORETICALLY RECEIVE PUSH NOTIFICATIONS FROM FITBIT
-app.get('/fitbitpush', function(req, res) {
+app.post('/fitbitpush', function(req, res) {
   console.log("Fitbit pushed!");
   console.log(req,res);
   res.set('Content-Type', 'application/json');
-  res.send(204, {});
+  res.send(204);
 });
 
 module.exports = app;
