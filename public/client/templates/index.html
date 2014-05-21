@@ -99,10 +99,10 @@
             </h2>
             <p class="lead"> Get real-time updates when you or your friends sync your data with Fitbit. If you think you have enough FitHP to battle your friend, then play!</p>
             <br><br><br>
-            <table class="lead" ng-repeat="friend in friends">
+            <table class="lead leftf" ng-repeat="friend in friends">
 			  <tr>
 			    <th>{{friend.displayName}}</th>
-			    <th><img src="{{friend.prof[0].avatar}}"></th>
+			    <th><img class="smallpic" src="{{friend.prof[0].avatar}}"></th>
 			  </tr>
 			  <tr>
 			    <td><b>STEPS:</b></td>
@@ -113,16 +113,16 @@
 			    <td>{{friend.calories}}</td>
 			  </tr>
 			  <tr>
-			    <td><b>ACTIVE MINUTES:</b></td>
+			    <td><b>ACTIVE MIN:</b></td>
 			    <td>{{friend.veryActiveMinutes}}</td>
 			  </tr>
 			  <tr>
 			    <td><b>SLEEP</b></td>
-			    <td>{{friend.sleep}}</td>
+			    <td>Slept so awesome last night, recovered all that HP!</td>
 			  </tr>
 			  <tr>
-			    <td></td>
-			    <td></td>
+			    <td><b>DISTANCE:</td>
+			    <td>4.3 miles</td>
 			  </tr>
 			</table>             
         </div>
