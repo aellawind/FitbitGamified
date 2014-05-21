@@ -11,6 +11,7 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var utils = require('./lib/util.js');
 var fitbitGet = require('./fitbitGet.js');
+var Q = require('q');
 
 // move to modularize later
 var db = require('./appData/config.js');
@@ -24,7 +25,7 @@ exports.fitbitClient = new utils.FitbitAPIClient(FITBIT_CONSUMER_KEY, FITBIT_CON
 // returns sufficient identifying information to recover the user account on any subsequent requests
 // specifically the second parameter of the done() method is the information serialized into the session data
 passport.serializeUser(function (user, done) {
-  console.log(user);
+  //console.log(user);
   done(null, user.originalId);
 });
 
@@ -44,7 +45,7 @@ passport.use(new FitbitStrategy({
   function (token, tokenSecret, profile, done) {
     // asynchronous verification, for effect...
     process.nextTick(function () {
-      console.log("PROFILE", profile);
+     // console.log("PROFILE", profile);
       exports.token = token;
       exports.oauth_access_token = token;
       exports.tokenSecret = tokenSecret;

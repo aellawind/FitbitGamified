@@ -1,5 +1,6 @@
 var fitbitly = require('./fitbitly.js');
 var Q = require('q');
+var async = require('async');
 
 // move to modularize later
 var db = require('./appData/config.js');
@@ -115,23 +116,37 @@ exports.getAllStats = function(req, res) {
 	});
 };
 
+//helper fn
+var toObject = function(arr) {
+  var rv = {};
+  for (var i = 0; i < arr.length; ++i)
+    rv[i] = arr[i];
+  return rv;
+}
+
 exports.getFriends = function(req, res) {
 	var friendsArr = [];
 	User.findOne({originalId: req.user.originalId}, function(err, foundUser) {
-		var userFriends = foundUser.friends;
-		console.log(userFriends.length);
-		for (var i =0; i < userFriends.length; i++ ) {
-			console.log(i);
-			User.find({originalId: userFriends[i]}, function(err, foundUsers) {
-				if(foundUser) {
-					friendsArr.push(foundUser);
+		var userFriends = toObject(foundUser.friends);
+		var sent = false;
+		for (friend in userFriends) {
+			var findFriend = userFriends[friend];
+			User.find({originalId: findFriend}, function(err, foundUsers) {
+				if(foundUsers[0]) {
+					console.log('found a user????',foundUsers[0]);
+					friendsArr.push(foundUsers[0]);
+					delete userFriends[friend];
 				}
-				if (i >= userFriends.length-1) {
+				if (Object.keys(userFriends).length === 0 && !sent) {
 					console.log('gets here ever');
-					res.send(200,friendsArr);
-				}
+					console.log("MY ARRAY", friendsArr);
+					sent = true;
+				} 
 			});
 		}
+		setTimeout(function() {
+			res.send(200,friendsArr)}
+			, 2000);
 	});
 };
 

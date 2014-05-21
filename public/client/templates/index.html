@@ -97,12 +97,34 @@
             <h2 class="featurette-heading">Battle Your Friends and
                 <span class="text-muted">Run More to Fight More</span>
             </h2>
-            <p class="lead"> 
-            <table class="lead">
-            	<th>asdfasdf</th>
-            	<tr>asdfas</tr>
-            </table>
-             {{ friends }} </p>
+            <p class="lead"> Get real-time updates when you or your friends sync your data with Fitbit. If you think you have enough FitHP to battle your friend, then play!</p>
+            <br><br><br>
+            <table class="lead" ng-repeat="friend in friends">
+			  <tr>
+			    <th>{{friend.displayName}}</th>
+			    <th><img src="{{friend.prof[0].avatar}}"></th>
+			  </tr>
+			  <tr>
+			    <td><b>STEPS:</b></td>
+			    <td>{{friend.steps}}</td>
+			  </tr>
+			  <tr>
+			    <td><b>CALORIES:</b></td>
+			    <td>{{friend.calories}}</td>
+			  </tr>
+			  <tr>
+			    <td><b>ACTIVE MINUTES:</b></td>
+			    <td>{{friend.veryActiveMinutes}}</td>
+			  </tr>
+			  <tr>
+			    <td><b>SLEEP</b></td>
+			    <td>{{friend.sleep}}</td>
+			  </tr>
+			  <tr>
+			    <td></td>
+			    <td></td>
+			  </tr>
+			</table>             
         </div>
 
         <hr class="featurette-divider">
