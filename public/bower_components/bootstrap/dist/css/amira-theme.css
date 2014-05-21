@@ -11,6 +11,7 @@ table,tr,td, th {
 
 .leftf {
 	float:left;
+	margin-right:20px;
 }
 
 .header-image {
@@ -26,6 +27,7 @@ table,tr,td, th {
 
 .smallpic {
 	width:100px;
+	height:100px;
 }
 
 .headline {
