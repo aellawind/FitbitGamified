@@ -1,7 +1,9 @@
 var fitbitly = require('./fitbitly.js');
 var Q = require('q');
 var async = require('async');
-
+var co = require('co');
+var thunkify = require('thunkify');
+var request = require('request');
 // move to modularize later
 var db = require('./appData/config.js');
 var User = require('./appData/models/user.js');
@@ -126,28 +128,38 @@ var toObject = function(arr) {
 
 exports.getFriends = function(req, res) {
 	var friendsArr = [];
-	User.findOne({originalId: req.user.originalId}, function(err, foundUser) {
-		var userFriends = toObject(foundUser.friends);
-		var sent = false;
-		for (friend in userFriends) {
-			var findFriend = userFriends[friend];
-			User.find({originalId: findFriend}, function(err, foundUsers) {
-				if(foundUsers[0]) {
-					console.log('found a user????',foundUsers[0]);
-					friendsArr.push(foundUsers[0]);
-					delete userFriends[friend];
-				}
-				if (Object.keys(userFriends).length === 0 && !sent) {
-					console.log('gets here ever');
-					console.log("MY ARRAY", friendsArr);
-					sent = true;
-				} 
-			});
-		}
-		setTimeout(function() {
-			res.send(200,friendsArr)}
-			, 2000);
-	});
+	User.findOneQ({originalId: req.user.originalId})
+		.then(function(result) {
+			console.log("q", user.);
+		}).fail(function(err) {
+			console.log(err);
+		}).done();
+
+		// eventually convert this promise to work with the following code, to get all friends
+	// User.findOne({originalId: req.user.originalId}, function(err, foundUser) {
+	// 	var userFriends = toObject(foundUser.friends);
+	// 	console.log("USER FRIENDS", userFriends);
+	// 	var sent = false;
+	// 	for (friend in userFriends) {
+	// 		var findFriend = userFriends[friend];
+	// 		User.find({originalId: findFriend}, function(err, foundUsers) {
+	// 			if(foundUsers[0]) {
+	// 				console.log('found a user????',foundUsers[0]);
+	// 				friendsArr.push(foundUsers[0]);
+	// 				delete userFriends[friend];
+	// 			}
+	// 			if (Object.keys(userFriends).length === 0 && !sent) {
+	// 				console.log('gets here ever');
+	// 				console.log("MY ARRAY", friendsArr);
+	// 				sent = true;
+	// 			} 
+	// 		});
+	// 	}
+	// 	setTimeout(function() {
+	// 		console.log(friendsArr);
+	// 		res.send(200,friendsArr)}
+	// 		, 3500);
+	// });
 };
 
 

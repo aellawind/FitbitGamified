@@ -103,7 +103,6 @@ app.get('/auth/fitbit',
 
 // Main game page, when we load it we want to make sure we get all the data
 app.get('/FitbitRPG', utils.ensureAuthenticated, fitbitGet.getAllFitbitData);
-
 app.get('/profile', utils.ensureAuthenticated, fitbitGet.getProfile);
 app.get('/friends', utils.ensureAuthenticated, fitbitGet.getFriends);
 app.get('/allStats', utils.ensureAuthenticated, fitbitGet.getAllStats);
